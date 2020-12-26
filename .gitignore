@@ -21,6 +21,3 @@ node_modules/
 # Extras
 temp.*
 tmp.*
-*.zip
-uploads/*
-dev/*
