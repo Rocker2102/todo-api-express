@@ -15,6 +15,7 @@ Thumbs.db
 .idea
 
 # npm
+.env
 node_modules/
 *.log
 
