@@ -1,7 +1,7 @@
 "use strict";
 
 const router = require("express").Router();
-const util = require("../utility/functions");
+const util = require("../utils");
 const mongoose = require("mongoose");
 let User = require("../models/users.model");
 
