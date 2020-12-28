@@ -1,6 +1,7 @@
 "use strict";
 
-const router = require('express').Router();
+const router = require("express").Router();
+const util = require("../utility/functions");
 const mongoose = require("mongoose");
 let User = require("../models/users.model");
 
@@ -21,22 +22,36 @@ mongoose.connect(mongoUri, mongoOptions).catch(err => {
 const connection = mongoose.connection;
 
 connection.once("open", function() {
-    console.log("MongoDB database connection established successfully");
+    console.log(`Connected to MongoDB (${process.env.MONGO_URI})`);
 });
 
+const validateUserData = (req, res, next) => {
+    const requiredKeys = ["name", "username", "password", "confirmPassword"];
+
+    if (!util.checkKeys(req.body, requiredKeys)) {
+        return res.status(400).json({
+            error: true,
+            message: "Required parameter missing or invalid!"
+        });
+    } else if (req.body.confirmPassword !== req.body.password) {
+        return res.status(400).json({
+            error: true,
+            message: "Passwords do not match!"
+        });
+    } else {
+        next();
+    }
+}
+
 /* POST request to add user */
-router.route("/").post((req, res) => {
+router.route("/").post(validateUserData, (req, res) => {
     let name = req.body.name;
     let username = req.body.username;
     let password = req.body.password;
 
-    const newUser = new User({
-        name, username, password
-    });
-
     User.findOne({username: username}, (err, result) => {
         if (err) {
-            res.status(400).json({
+            res.status(503).json({
                 error: true,
                 info: err,
                 message: "An error occurred!"
@@ -47,10 +62,18 @@ router.route("/").post((req, res) => {
                 message: "Username already taken!"
             });
         } else {
+            password = util.sha256(password);
+            const newUser = new User({
+                name, username, password
+            });
+
             newUser.save()
-                .then(() => res.json({message: "Account Created"}))
+                .then(() => res.json({
+                    error: false,
+                    message: "Account Created"
+                }))
                 .catch((err) => {
-                    return res.status(400).json({
+                    res.status(400).json({
                         error: true,
                         info: err,
                         message: "An error occurred!"
@@ -61,9 +84,40 @@ router.route("/").post((req, res) => {
 });
 
 /* GET request to get user info. */
-router.route("/").get((req, res) => {
-    let userId = req.params["user-id"];
-    res.send([userId, req.query]);
+router.route("/:id").get((req, res, next) => {
+    if (req.params.id) {
+        next();
+    } else {
+        res.send("User ID or username required!");
+    }
+}, (req, res, next) => {
+    let userId = req.params.id.trim();
+
+    User.findById(userId, (err, result) => {
+        if (result) {
+            result.password = null;
+            res.status(200).json(result);
+        } else {
+            next();
+        }
+    });
+}, (req, res) => {
+    let username = req.params.id.trim();
+
+    User.findOne({username: username}, (err, result) => {
+        if (err) {
+            res.status(500).json({
+                error: true,
+                message: "An error occurred!",
+                info: err
+            });
+        } else if (result) {
+            result.password = null;
+            res.status(200).json(result);
+        } else {
+            res.status(404).send("User not found!");
+        }
+    });
 });
 
 module.exports = router;
