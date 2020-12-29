@@ -8,6 +8,6 @@ const dataSchema = new Schema({
     dueDate: { type: Date, required: true }
 }, { timestamps: true });
 
-const Data = mongoose.model("Data", dataSchema);
+const Data = mongoose.model("todo_data", dataSchema);
 
 module.exports = Data;
