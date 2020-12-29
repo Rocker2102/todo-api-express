@@ -1,8 +1,8 @@
 "use strict";
 
-exports.sha256 = str => {
-    let hash = require("crypto").createHash("sha256");
-    let data = hash.update(str, "utf-8");
+exports.sha256 = (str, hashSalt = "") => {
+    str = (hashSalt) ? str + hashSalt : str;
+    let data = require("crypto").createHash("sha256").update(str, "utf-8");
     return data.digest("hex");
 }
 
@@ -12,6 +12,5 @@ exports.checkKeys = (data, required) => {
             return false;
         }
     }
-
     return true;
 }
