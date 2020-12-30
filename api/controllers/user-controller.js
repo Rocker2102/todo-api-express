@@ -44,7 +44,7 @@ exports.createUser = (req, res) => {
 }
 
 exports.getUserById = (req, res, next) => {
-    let userId = req.params.id.trim();
+    let userId = req.params.identifier.trim();
 
     User.findById(userId, (err, result) => {
         if (result) {
@@ -57,7 +57,7 @@ exports.getUserById = (req, res, next) => {
 }
 
 exports.getUserByUsername = (req, res) => {
-    let username = req.params.id.trim();
+    let username = req.params.identifier.trim();
 
     User.findOne({username: username}, (err, result) => {
         if (err) {
@@ -70,7 +70,74 @@ exports.getUserByUsername = (req, res) => {
             result.password = null;
             res.status(200).json(result);
         } else {
-            res.status(404).send("User not found!");
+            res.status(404).json({
+                error: true,
+                message: "User not found!"
+            });
+        }
+    });
+}
+
+exports.updateUser = (req, res) => {
+    let userId = req.params.userId;
+    let name = req.body.name.trim();
+    let username = req.body.username.trim();
+
+    User.findByIdAndUpdate(userId, {
+        name: name,
+        username: username
+    }, (err, doc) => {
+        if (err) {
+            res.status(503).json({
+                error: true,
+                info: err,
+                message: "An error occurred!"
+            });
+        } else if (doc) {
+            res.json({
+                error: false,
+                message: "Details updated!"
+            });
+        } else {
+            res.status(400).json({
+                error: false,
+                message: "Failed to process request!"
+            });
+        }
+    });
+}
+
+exports.deleteUser = (req, res) => {
+    let userId = req.params.userId.trim();
+    let password = util.sha256(req.body.password.trim(), process.env.HASH_SALT);
+
+    User.findOne({_id: userId, password: password}, (err, doc) => {
+        if (err) {
+            res.status(503).json({
+                error: true,
+                info: err,
+                message: "An error occurred!"
+            });
+        } else if (doc) {
+            User.findByIdAndDelete(userId, (err) => {
+                if (err) {
+                    res.status(503).json({
+                        error: true,
+                        info: err,
+                        message: "An error occurred!"
+                    });
+                } else {
+                    res.json({
+                        error: false,
+                        message: "Account deleted!"
+                    });
+                }
+            });
+        } else {
+            res.status(400).json({
+                error: false,
+                message: "Failed to process request!"
+            });
         }
     });
 }
