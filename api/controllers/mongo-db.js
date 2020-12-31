@@ -6,6 +6,7 @@ const mongoUri = process.env.MONGO_URI;
 const mongoOptions = {
     useUnifiedTopology: true,
     useNewUrlParser: true,
+    useFindAndModify: false,
     auth: {
         "authSource": "admin"
     },
