@@ -5,9 +5,9 @@ require("./mongo-db");
 let User = require("../models/users.model");
 
 exports.createUser = (req, res) => {
-    let name = req.body.name;
-    let username = req.body.username;
-    let password = req.body.password;
+    let name = req.body.name.trim();
+    let username = req.body.username.trim();
+    let password = req.body.password.trim();
 
     User.findOne({username: username}, (err, result) => {
         if (err) {
