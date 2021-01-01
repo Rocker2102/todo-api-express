@@ -107,6 +107,61 @@ exports.updateUser = (req, res) => {
     });
 }
 
+exports.changeUserPassword = (req, res) => {
+    let userId = res.locals.userId;
+    let oldPwd = util.sha256(req.body.oldPassword.trim(), process.env.HASH_SALT);
+    let newPwd = util.sha256(req.body.newPassword.trim(), process.env.HASH_SALT);
+
+    if (req.body.newPassword !== req.body.confirmPassword) {
+        res.status(400).json({
+            error: true,
+            message: "Passwords do not match!"
+        });
+    } else if (req.body.oldPassword === req.body.newPassword) {
+        res.status(409).json({
+            error: true,
+            message: "New password same as previous!"
+        });
+    } else {
+        User.findOne({_id: userId, password: oldPwd}, (err, doc) => {
+            if (err) {
+                res.status(503).json({
+                    error: true,
+                    info: err,
+                    message: "An error occurred!"
+                });
+            } else if (doc) {
+                User.findByIdAndUpdate(userId, {
+                    password: newPwd
+                }, (err, doc) => {
+                    if (err) {
+                        res.status(503).json({
+                            error: true,
+                            info: err,
+                            message: "An error occurred!"
+                        });
+                    } else if (doc) {
+                        res.json({
+                            error: false,
+                            message: "Password changed"
+                        });
+                    } else {
+                        res.status(400).json({
+                            error: true,
+                            message: "Failed to process request!"
+                        });
+                    }
+                });
+            } else {
+                res.status(400).json({
+                    error: true,
+                    message: "Incorrect Password!"
+                });
+            }
+        });
+    }
+}
+
 exports.deleteUser = (req, res) => {
     let userId = res.locals.userId;
     let password = util.sha256(req.body.password.trim(), process.env.HASH_SALT);

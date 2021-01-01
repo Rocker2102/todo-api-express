@@ -47,6 +47,20 @@ router.route("/update").put(auth.authMiddleware, (req, res, next) => {
     }
 }, userController.updateUser);
 
+/* PUT request to change password */
+router.route("/change-password").put(auth.authMiddleware, (req, res, next) => {
+    const requiredKeys = ["oldPassword", "newPassword", "confirmPassword"];
+
+    if (!util.checkKeys(req.body, requiredKeys)) {
+        return res.status(400).json({
+            error: true,
+            message: "Required parameter missing or invalid!"
+        });
+    } else {
+        next();
+    }
+}, userController.changeUserPassword);
+
 /* DELETE request to delete user */
 router.route("/delete").delete(auth.authMiddleware, (req, res, next) => {
     const requiredKeys = ["password"];
