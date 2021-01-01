@@ -79,7 +79,7 @@ exports.getUserByUsername = (req, res) => {
 }
 
 exports.updateUser = (req, res) => {
-    let userId = req.params.userId;
+    let userId = res.locals.userId;
     let name = req.body.name.trim();
     let username = req.body.username.trim();
 
@@ -100,7 +100,7 @@ exports.updateUser = (req, res) => {
             });
         } else {
             res.status(400).json({
-                error: false,
+                error: true,
                 message: "Failed to process request!"
             });
         }
@@ -108,7 +108,7 @@ exports.updateUser = (req, res) => {
 }
 
 exports.deleteUser = (req, res) => {
-    let userId = req.params.userId.trim();
+    let userId = res.locals.userId;
     let password = util.sha256(req.body.password.trim(), process.env.HASH_SALT);
 
     User.findOne({_id: userId, password: password}, (err, doc) => {
@@ -135,7 +135,7 @@ exports.deleteUser = (req, res) => {
             });
         } else {
             res.status(400).json({
-                error: false,
+                error: true,
                 message: "Failed to process request!"
             });
         }

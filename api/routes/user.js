@@ -3,6 +3,7 @@
 const router = require("express").Router();
 const util = require("../utils");
 const userController = require("../controllers/user-controller");
+const auth = require("../controllers/auth");
 
 /* POST request to add user */
 router.route("/").post((req, res, next) => {
@@ -32,8 +33,8 @@ router.route("/:identifier").get((req, res, next) => {
     }
 }, userController.getUserById, userController.getUserByUsername);
 
-/*PUT request to update user */
-router.route("/:userId/update").put((req, res, next) => {
+/* PUT request to update user */
+router.route("/update").put(auth.authMiddleware, (req, res, next) => {
     const requiredKeys = ["name", "username"];
 
     if (!util.checkKeys(req.body, requiredKeys)) {
@@ -47,7 +48,7 @@ router.route("/:userId/update").put((req, res, next) => {
 }, userController.updateUser);
 
 /* DELETE request to delete user */
-router.route("/:userId/delete").delete((req, res, next) => {
+router.route("/delete").delete(auth.authMiddleware, (req, res, next) => {
     const requiredKeys = ["password"];
 
     if (!util.checkKeys(req.body, requiredKeys)) {
