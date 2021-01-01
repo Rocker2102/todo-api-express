@@ -56,8 +56,6 @@ const authTokenMiddleware = (req, res, next) => {
         });
     } else {
         res.locals.userId = getUserIdFromToken(token);
-        console.log(res.locals.userId);
-        console.log(getUserIdFromToken(token));
         next();
     }
 }
